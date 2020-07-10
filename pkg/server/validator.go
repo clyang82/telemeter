@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+        "os"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
@@ -41,9 +41,8 @@ func ClusterIDFromContext(ctx context.Context) (string, bool) {
 // ClusterID is a HTTP middleware that extracts the cluster's ID and passes it on via context.
 func ClusterID(logger log.Logger, key string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rlogger := log.With(logger, "request", middleware.GetReqID(r.Context()))
 
-		client, ok := authorize.FromContext(r.Context())
+		/*client, ok := authorize.FromContext(r.Context())
 		if !ok {
 			msg := "unable to find user info"
 			level.Warn(rlogger).Log("msg", msg)
@@ -55,9 +54,10 @@ func ClusterID(logger log.Logger, key string, next http.HandlerFunc) http.Handle
 			level.Warn(rlogger).Log("msg", msg)
 			http.Error(w, msg, http.StatusInternalServerError)
 			return
-		}
+		}*/
+                clusterId, _ := os.LookupEnv("ID")
 
-		r = r.WithContext(WithClusterID(r.Context(), client.Labels[key]))
+		r = r.WithContext(WithClusterID(r.Context(), clusterId))
 
 		next.ServeHTTP(w, r)
 	}

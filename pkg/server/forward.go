@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+        "os"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
@@ -60,7 +61,7 @@ func ForwardHandler(logger log.Logger, forwardURL *url.URL, tenantID string, cli
 	return func(w http.ResponseWriter, r *http.Request) {
 		rlogger := log.With(logger, "request", middleware.GetReqID(r.Context()))
 
-		clusterID, ok := ClusterIDFromContext(r.Context())
+		clusterID, ok := os.LookupEnv("ID")//ClusterIDFromContext(r.Context())
 		if !ok {
 			msg := "failed to retrieve clusterID"
 			level.Warn(rlogger).Log("msg", msg)

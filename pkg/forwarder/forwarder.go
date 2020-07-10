@@ -19,7 +19,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	clientmodel "github.com/prometheus/client_model/go"
 
-	"github.com/openshift/telemeter/pkg/authorize"
 	telemeterhttp "github.com/openshift/telemeter/pkg/http"
 	"github.com/openshift/telemeter/pkg/metricfamily"
 	"github.com/openshift/telemeter/pkg/metricsclient"
@@ -187,16 +186,6 @@ func New(cfg Config) (*Worker, error) {
 			return nil, fmt.Errorf("unable to read to-token-file: %v", err)
 		}
 		cfg.ToToken = strings.TrimSpace(string(data))
-	}
-	if (len(cfg.ToToken) > 0) != (cfg.ToAuthorize != nil) {
-		return nil, errors.New("an authorization URL and authorization token must both specified or empty")
-	}
-	if len(cfg.ToToken) > 0 {
-		// Exchange our token for a token from the authorize endpoint, which also gives us a
-		// set of expected labels we must include.
-		rt := authorize.NewServerRotatingRoundTripper(cfg.ToToken, cfg.ToAuthorize, toClient.Transport)
-		toClient.Transport = rt
-		transformer.With(metricfamily.NewLabel(nil, rt))
 	}
 	w.toClient = metricsclient.New(logger, toClient, cfg.LimitBytes, w.interval, "federate_to")
 	w.transformer = transformer

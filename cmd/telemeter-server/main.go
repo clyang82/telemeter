@@ -408,7 +408,7 @@ func (o *Options) Run() error {
 			const issuer = "telemeter.selfsigned"
 			const audience = "telemeter-client"
 
-			jwtAuthorizer := jwt.NewClientAuthorizer(
+			_ = jwt.NewClientAuthorizer(
 				issuer,
 				[]crypto.PublicKey{publicKey},
 				jwt.NewValidator(o.Logger, []string{audience}),
@@ -442,17 +442,9 @@ func (o *Options) Run() error {
 
 			external.Post("/upload",
 				server.InstrumentedHandler("upload",
-					authorize.NewAuthorizeClientHandler(jwtAuthorizer,
-						server.ClusterID(o.Logger, o.clusterIDKey,
-							server.Ratelimit(o.Logger, o.Ratelimit, time.Now,
 								server.Snappy(
-									server.Validate(o.Logger, transforms, 24*time.Hour, o.LimitBytes, time.Now,
 										server.ForwardHandler(o.Logger, forwardURL, o.TenantID, forwardClient),
 									),
-								),
-							),
-						),
-					),
 				).ServeHTTP,
 			)
 		}
